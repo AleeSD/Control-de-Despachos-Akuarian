@@ -15,7 +15,7 @@ const FECHA_FORMATO = "dd/mm/yyyy";
 
 interface ColDef {
   letra: string;
-  campo: keyof PedidoVista | "destino_efectivo";
+  campo: keyof PedidoVista;
   esFecha: boolean;
   esBultos: boolean;
 }
@@ -51,7 +51,8 @@ interface WsModel {
 
 export async function generarReporte(pedidos: PedidoVista[]): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(Buffer.from(PLANTILLA_BASE64, "base64"));
+  const plantillaBuffer = Buffer.from(PLANTILLA_BASE64, "base64");
+  await wb.xlsx.load(plantillaBuffer as any);
 
   const ws = wb.getWorksheet(HOJA_PLANTILLA) ?? wb.worksheets[0];
   if (!ws) throw new Error("La plantilla no tiene hojas.");
@@ -94,7 +95,7 @@ export async function generarReporte(pedidos: PedidoVista[]): Promise<Buffer> {
   for (const p of pedidos) {
     for (const { letra, campo, esFecha, esBultos } of EXPORT_COLUMNAS) {
       const cell = ws.getCell(`${letra}${fila}`);
-      const valor = (p as Record<string, unknown>)[campo as string];
+      const valor = p[campo];
 
       cell.font = { ...baseFont };
       cell.border = border;

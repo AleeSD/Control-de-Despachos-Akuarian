@@ -17,7 +17,7 @@ export default function EstadoChart({ pedidos }: { pedidos: PedidoVista[] }) {
   for (const p of pedidos) conteo.set(p.estado, (conteo.get(p.estado) ?? 0) + 1);
 
   // Solo estados con al menos un pedido, en el orden canónico.
-  const data = ESTADOS.filter((e) => (conteo.get(e) ?? 0) > 0).map((e) => ({
+  const data: Array<{ estado: string; cantidad: number; color: string }> = ESTADOS.filter((e) => (conteo.get(e) ?? 0) > 0).map((e) => ({
     estado: e,
     cantidad: conteo.get(e) ?? 0,
     color: colorDeEstado(e).bar,

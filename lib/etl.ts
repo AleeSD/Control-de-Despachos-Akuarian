@@ -222,8 +222,11 @@ export function leerProgramacion(data: ArrayBuffer | Buffer): ResultadoETL {
         ["tipo_entrega", norm(get(row, "tipo_entrega"))],
         ["canal_comercial", norm(get(row, "canal_comercial"))],
       ];
+      const gMutable = g as unknown as Record<string, unknown>;
       for (const [campo, val] of textos) {
-        if (!g[campo] && val) (g as Record<string, unknown>)[campo] = val;
+        if (!g[campo] && val) {
+          gMutable[campo] = val;
+        }
       }
       if (g.fecha_programada === null && fechaProg !== null) {
         g.fecha_programada = fechaProg;

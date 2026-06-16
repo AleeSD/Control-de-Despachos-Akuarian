@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
   const pedidos = (data ?? []).map((p) => aVista(p as Pedido));
   const buffer = await generarReporte(pedidos);
 
-  return new NextResponse(buffer, {
+  return new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
       "Content-Type":
