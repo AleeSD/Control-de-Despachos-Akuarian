@@ -98,21 +98,26 @@ export async function generarReporte(pedidos: PedidoVista[]): Promise<Buffer> {
       const valor = p[campo];
 
       cell.font = { ...baseFont };
-      cell.border = border;
 
       if (esFecha) {
         const d = isoADate(valor);
         cell.value = d ?? null;
-        if (d) cell.numFmt = FECHA_FORMATO;
+        if (d) {
+          cell.numFmt = FECHA_FORMATO;
+          cell.border = border;
+        }
         cell.alignment = { horizontal: "center", vertical: "middle" };
       } else if (esBultos) {
         const n = typeof valor === "number"
           ? valor
           : parseInt(String(valor ?? 0), 10);
         cell.value = Number.isFinite(n) ? n : 0;
+        if (n > 0) cell.border = border;
         cell.alignment = { horizontal: "center", vertical: "middle" };
       } else {
-        cell.value = valor === null || valor === undefined ? "" : String(valor);
+        const valorStr = valor === null || valor === undefined ? "" : String(valor);
+        cell.value = valorStr;
+        if (valorStr.trim()) cell.border = border;
         cell.alignment = { horizontal: "left", vertical: "middle", wrapText: true };
       }
     }
