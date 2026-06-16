@@ -70,19 +70,8 @@ export async function generarReporte(pedidos: PedidoVista[]): Promise<Buffer> {
     }
   }
 
-  // 2) Limpiar valores + DESOCULTAR filas de datos de la plantilla.
-  const lastRow = ws.rowCount;
-  for (let r = DATA_START_ROW; r <= lastRow; r++) {
-    const row = ws.getRow(r);
-    row.eachCell({ includeEmpty: true }, (cell) => { cell.value = null; });
-    row.hidden = false;
-  }
-
-  // 3) Quitar autofiltro heredado (causa que las filas se vean "filtradas/vacías").
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (ws as unknown as { model: any }).model.autoFilter = undefined;
-
-  // Estilo base tomado de la cabecera B3 para mantener la tipografía.
+  // Estilo base (tipografía de la cabecera) y borde fino reutilizable. Se calcula
+  // ANTES de limpiar para no perder la fuente original de la plantilla.
   const hdr = ws.getCell(`B${HEADER_ROW}`);
   const baseFont: Partial<ExcelJS.Font> = {
     name: hdr.font?.name ?? "Arial",
@@ -91,6 +80,37 @@ export async function generarReporte(pedidos: PedidoVista[]): Promise<Buffer> {
   const thin: Partial<ExcelJS.Border> = { style: "thin", color: { argb: "FF000000" } };
   const border: Partial<ExcelJS.Borders> = { top: thin, left: thin, right: thin, bottom: thin };
 
+  // 2) Limpiar la zona de datos heredada: valor Y estilo completo + DESOCULTAR.
+  // Las celdas vacías de la plantilla conservan un estilo propio CON borde, así
+  // que resetear el estilo (no basta con border={}, que ExcelJS fusiona como
+  // no-op) elimina esas "filas fantasma".
+  const lastRow = ws.rowCount;
+  for (let r = DATA_START_ROW; r <= lastRow; r++) {
+    const row = ws.getRow(r);
+    row.eachCell({ includeEmpty: true }, (cell) => {
+      cell.value = null;
+      cell.style = {};
+    });
+    row.hidden = false;
+  }
+
+  // Las columnas C/D/E/F/J traen un borde a nivel de COLUMNA (borderId thin) que
+  // Excel pinta hacia abajo "casi infinito". Lo neutralizamos. Esto también borra
+  // el borde de la cabecera, que volvemos a aplicar a continuación.
+  for (let c = 1; c <= EXPORT_COLUMNAS.length + 1; c++) {
+    ws.getColumn(c).border = {};
+  }
+  for (const { letra } of EXPORT_COLUMNAS) {
+    ws.getCell(`${letra}${HEADER_ROW}`).border = border;
+  }
+
+  // 3) Quitar autofiltro heredado (causa que las filas se vean "filtradas/vacías").
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (ws as unknown as { model: any }).model.autoFilter = undefined;
+
+  // La tabla se ADAPTA al número de pedidos: cada celda dentro del rango de datos
+  // (filas 4..3+N × columnas B..L) lleva borde, incluso si está vacía, para que la
+  // grilla sea un rectángulo limpio. Fuera de ese rango no queda ningún borde.
   let fila = DATA_START_ROW;
   for (const p of pedidos) {
     for (const { letra, campo, esFecha, esBultos } of EXPORT_COLUMNAS) {
@@ -98,26 +118,21 @@ export async function generarReporte(pedidos: PedidoVista[]): Promise<Buffer> {
       const valor = p[campo];
 
       cell.font = { ...baseFont };
+      cell.border = border;
 
       if (esFecha) {
         const d = isoADate(valor);
         cell.value = d ?? null;
-        if (d) {
-          cell.numFmt = FECHA_FORMATO;
-          cell.border = border;
-        }
+        if (d) cell.numFmt = FECHA_FORMATO;
         cell.alignment = { horizontal: "center", vertical: "middle" };
       } else if (esBultos) {
         const n = typeof valor === "number"
           ? valor
           : parseInt(String(valor ?? 0), 10);
         cell.value = Number.isFinite(n) ? n : 0;
-        if (n > 0) cell.border = border;
         cell.alignment = { horizontal: "center", vertical: "middle" };
       } else {
-        const valorStr = valor === null || valor === undefined ? "" : String(valor);
-        cell.value = valorStr;
-        if (valorStr.trim()) cell.border = border;
+        cell.value = valor === null || valor === undefined ? "" : String(valor);
         cell.alignment = { horizontal: "left", vertical: "middle", wrapText: true };
       }
     }

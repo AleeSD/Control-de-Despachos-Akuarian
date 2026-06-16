@@ -1,20 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Pedido, PedidoVista, Profile } from "./types";
-
-function aVista(p: Pedido): PedidoVista {
-  const destino_efectivo =
-    (p.destino_manual && p.destino_manual.trim()) || p.destino || "";
-  // productos puede venir como string JSON o como array (jsonb).
-  let productos = p.productos;
-  if (typeof productos === "string") {
-    try {
-      productos = JSON.parse(productos);
-    } catch {
-      productos = [];
-    }
-  }
-  return { ...p, productos: productos ?? [], destino_efectivo };
-}
+import { aVista } from "./vista";
 
 export async function getPerfil(): Promise<Profile | null> {
   const supabase = createClient();
@@ -49,13 +35,6 @@ export async function getFechasDisponibles(): Promise<string[]> {
     if (r.fecha_programada) set.add(r.fecha_programada);
   });
   return Array.from(set).sort();
-}
-
-export function proximaFecha(fechas: string[], hoy = new Date()): string | null {
-  if (fechas.length === 0) return null;
-  const hoyIso = hoy.toISOString().slice(0, 10);
-  const futuras = fechas.filter((f) => f >= hoyIso);
-  return futuras.length > 0 ? futuras[0] : fechas[fechas.length - 1];
 }
 
 export async function getPedidos(fecha: string): Promise<PedidoVista[]> {

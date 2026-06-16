@@ -1,24 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generarReporte } from "@/lib/export";
-import type { Pedido, PedidoVista } from "@/lib/types";
+import { aVista } from "@/lib/vista";
+import type { Pedido } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
-
-function aVista(p: Pedido): PedidoVista {
-  const destino_efectivo =
-    (p.destino_manual && p.destino_manual.trim()) || p.destino || "";
-  let productos = p.productos as unknown;
-  if (typeof productos === "string") {
-    try {
-      productos = JSON.parse(productos);
-    } catch {
-      productos = [];
-    }
-  }
-  return { ...p, productos: (productos as PedidoVista["productos"]) ?? [], destino_efectivo };
-}
 
 export async function GET(request: NextRequest) {
   const supabase = createClient();

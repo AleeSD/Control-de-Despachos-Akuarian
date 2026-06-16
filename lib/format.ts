@@ -33,6 +33,15 @@ export function fechaHora(iso: string | null | undefined): string {
   });
 }
 
+// Elige la fecha a mostrar por defecto: la primera >= hoy; si todas son
+// pasadas, la última disponible. Función pura (sin acceso a BD ni a Next).
+export function proximaFecha(fechas: string[], hoy = new Date()): string | null {
+  if (fechas.length === 0) return null;
+  const hoyIso = hoy.toISOString().slice(0, 10);
+  const futuras = fechas.filter((f) => f >= hoyIso);
+  return futuras.length > 0 ? futuras[0] : fechas[fechas.length - 1];
+}
+
 export function iniciales(nombre: string | null | undefined, email?: string): string {
   const base = (nombre && nombre.trim()) || email || "?";
   const partes = base.trim().split(/\s+/).slice(0, 2);

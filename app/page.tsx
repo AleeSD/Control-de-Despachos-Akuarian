@@ -3,10 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import {
   getPerfil,
   getFechasDisponibles,
-  proximaFecha,
   getPedidos,
   getUltimaImportacion,
 } from "@/lib/data";
+import { proximaFecha } from "@/lib/format";
 import Dashboard from "@/components/Dashboard";
 
 export const dynamic = "force-dynamic";
