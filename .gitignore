@@ -1,0 +1,39 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# env — NUNCA commitear claves reales
+.env
+.env.local
+.env*.local
+
+# misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# sqlite (prototipo anterior)
+*.db
+
+# Excel de origen (no versionar datos operativos)
+# Excepción: NO excluimos plantilla-base64.ts porque ya está compilada en lib/
