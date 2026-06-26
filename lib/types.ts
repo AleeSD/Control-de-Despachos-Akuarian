@@ -34,6 +34,8 @@ export interface Pedido {
   canal_comercial: string | null;
   productos: ProductoLinea[];
   estado: string;
+  nota_estado: string | null;
+  fecha_reprogramada: string | null;
   actualizado_en: string;
   creado_en: string;
 }

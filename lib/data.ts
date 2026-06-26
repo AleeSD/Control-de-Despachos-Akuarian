@@ -26,13 +26,13 @@ export async function getFechasDisponibles(): Promise<string[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("pedidos")
-    .select("fecha_programada")
-    .not("fecha_programada", "is", null)
-    .order("fecha_programada", { ascending: true });
+    .select("fecha_efectiva")
+    .not("fecha_efectiva", "is", null)
+    .order("fecha_efectiva", { ascending: true });
 
   const set = new Set<string>();
-  (data ?? []).forEach((r: { fecha_programada: string | null }) => {
-    if (r.fecha_programada) set.add(r.fecha_programada);
+  (data ?? []).forEach((r: { fecha_efectiva: string | null }) => {
+    if (r.fecha_efectiva) set.add(r.fecha_efectiva);
   });
   return Array.from(set).sort();
 }
@@ -42,7 +42,7 @@ export async function getPedidos(fecha: string): Promise<PedidoVista[]> {
   const { data } = await supabase
     .from("pedidos")
     .select("*")
-    .eq("fecha_programada", fecha)
+    .eq("fecha_efectiva", fecha)
     .order("n_pedido", { ascending: true });
 
   return (data ?? []).map((p) => aVista(p as Pedido));

@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   const { data } = await supabase
     .from("pedidos")
     .select("*")
-    .eq("fecha_programada", fecha)
+    .eq("fecha_efectiva", fecha)
     .order("n_pedido", { ascending: true });
 
   const pedidos = (data ?? []).map((p) => aVista(p as Pedido));

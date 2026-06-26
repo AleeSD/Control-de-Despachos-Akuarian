@@ -37,3 +37,7 @@ next-env.d.ts
 
 # Excel de origen (no versionar datos operativos)
 # Excepción: NO excluimos plantilla-base64.ts porque ya está compilada en lib/
+
+# Claude Code — configuración local del desarrollador
+.claude/settings.local.json
+.mcp.json

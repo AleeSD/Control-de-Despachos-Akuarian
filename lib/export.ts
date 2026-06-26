@@ -6,6 +6,7 @@
 
 import ExcelJS from "exceljs";
 import type { PedidoVista } from "./types";
+import { fechaCorta } from "./format";
 import { PLANTILLA_BASE64 } from "./plantilla-base64";
 
 const HOJA_PLANTILLA = "DESPACHOS PENDIENTES";
@@ -18,6 +19,7 @@ interface ColDef {
   campo: keyof PedidoVista;
   esFecha: boolean;
   esBultos: boolean;
+  transform?: (p: PedidoVista) => string;
 }
 
 const EXPORT_COLUMNAS: ColDef[] = [
@@ -30,7 +32,19 @@ const EXPORT_COLUMNAS: ColDef[] = [
   { letra: "H", campo: "fecha_entrega",      esFecha: true,  esBultos: false },
   { letra: "I", campo: "hora_cita",          esFecha: false, esBultos: false },
   { letra: "J", campo: "bultos",             esFecha: false, esBultos: true  },
-  { letra: "K", campo: "observaciones",      esFecha: false, esBultos: false },
+  {
+    letra: "K",
+    campo: "observaciones",
+    esFecha: false,
+    esBultos: false,
+    transform: (p) => {
+      const partes: string[] = [];
+      if (p.observaciones) partes.push(p.observaciones);
+      if (p.nota_estado)   partes.push(`Motivo: ${p.nota_estado}`);
+      if (p.fecha_reprogramada) partes.push(`Reprog.: ${fechaCorta(p.fecha_reprogramada)}`);
+      return partes.join(" | ");
+    },
+  },
   { letra: "L", campo: "estado",             esFecha: false, esBultos: false },
 ];
 
@@ -105,7 +119,7 @@ export async function generarReporte(pedidos: PedidoVista[]): Promise<Buffer> {
   }
 
   // 3) Quitar autofiltro heredado (causa que las filas se vean "filtradas/vacías").
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  /* eslint-disable-next-line */
   (ws as unknown as { model: any }).model.autoFilter = undefined;
 
   // La tabla se ADAPTA al número de pedidos: cada celda dentro del rango de datos
@@ -113,7 +127,7 @@ export async function generarReporte(pedidos: PedidoVista[]): Promise<Buffer> {
   // grilla sea un rectángulo limpio. Fuera de ese rango no queda ningún borde.
   let fila = DATA_START_ROW;
   for (const p of pedidos) {
-    for (const { letra, campo, esFecha, esBultos } of EXPORT_COLUMNAS) {
+    for (const { letra, campo, esFecha, esBultos, transform } of EXPORT_COLUMNAS) {
       const cell = ws.getCell(`${letra}${fila}`);
       const valor = p[campo];
 
@@ -132,7 +146,9 @@ export async function generarReporte(pedidos: PedidoVista[]): Promise<Buffer> {
         cell.value = Number.isFinite(n) ? n : 0;
         cell.alignment = { horizontal: "center", vertical: "middle" };
       } else {
-        cell.value = valor === null || valor === undefined ? "" : String(valor);
+        cell.value = transform
+          ? transform(p)
+          : (valor === null || valor === undefined ? "" : String(valor));
         cell.alignment = { horizontal: "left", vertical: "middle", wrapText: true };
       }
     }

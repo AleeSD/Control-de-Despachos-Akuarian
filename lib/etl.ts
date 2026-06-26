@@ -11,7 +11,7 @@ import * as XLSX from "xlsx";
 import type { PedidoConsolidado, ProductoLinea } from "./types";
 
 // xlsx no exporta SSF como tipo público; accedemos vía cast.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/* eslint-disable-next-line */
 const XLSXSSF = (XLSX as unknown as { SSF: any }).SSF as {
   parse_date_code: (n: number) => { y: number; m: number; d: number } | null;
 };

@@ -29,6 +29,8 @@ function pedido(i: number): PedidoVista {
     canal_comercial: "",
     productos: [],
     estado: "pendiente",
+    nota_estado: null,
+    fecha_reprogramada: null,
     actualizado_en: "",
     creado_en: "",
   };
@@ -101,5 +103,42 @@ describe("generarReporte — grilla de bordes", () => {
     for (const c of COLS) expect(tieneBorde(ws, `${c}${ultima}`)).toBe(true);
     // ...y la inmediatamente siguiente, sin ningún borde.
     for (const c of COLS) expect(tieneBorde(ws, `${c}${ultima + 1}`)).toBe(false);
+  });
+});
+
+describe("generarReporte — columna K (Observaciones)", () => {
+  it("escribe solo observaciones cuando no hay nota ni fecha reprogramada", async () => {
+    const p = pedido(1);
+    p.observaciones = "Llamar antes de llegar";
+    const ws = await cargar([p]);
+    expect(ws.getCell(`K${DATA_START}`).value).toBe("Llamar antes de llegar");
+  });
+
+  it("concatena nota_estado en columna K", async () => {
+    const p = pedido(1);
+    p.observaciones = "Obs base";
+    p.nota_estado = "Cliente rechazó el pedido";
+    const ws = await cargar([p]);
+    expect(ws.getCell(`K${DATA_START}`).value).toBe(
+      "Obs base | Motivo: Cliente rechazó el pedido",
+    );
+  });
+
+  it("concatena fecha_reprogramada en columna K", async () => {
+    const p = pedido(1);
+    p.fecha_reprogramada = "2026-06-20";
+    const ws = await cargar([p]);
+    expect(ws.getCell(`K${DATA_START}`).value).toBe("Reprog.: 20/06/2026");
+  });
+
+  it("concatena nota y fecha cuando ambas están presentes", async () => {
+    const p = pedido(1);
+    p.observaciones = "Obs";
+    p.nota_estado = "Sin stock";
+    p.fecha_reprogramada = "2026-06-25";
+    const ws = await cargar([p]);
+    expect(ws.getCell(`K${DATA_START}`).value).toBe(
+      "Obs | Motivo: Sin stock | Reprog.: 25/06/2026",
+    );
   });
 });

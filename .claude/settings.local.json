@@ -9,7 +9,11 @@
       "PowerShell(Get-ChildItem \"C:\\\\Program Files\\\\nodejs\", \"$env:ProgramFiles\\\\nodejs\", \"$env:LOCALAPPDATA\\\\Programs\\\\nodejs\", \"$env:APPDATA\\\\nvm\", \"$env:LOCALAPPDATA\\\\fnm\" -ErrorAction SilentlyContinue | Select-Object FullName; Test-Path \"C:\\\\Program Files\\\\nodejs\\\\node.exe\"; Test-Path \"$env:LOCALAPPDATA\\\\Programs\\\\nodejs\\\\node.exe\")",
       "Bash(pip show *)",
       "Bash(python -)",
-      "PowerShell($env:Path = \"C:\\\\Users\\\\akt.alm2\\\\Downloads\\\\node-v24.16.0-win-x64;\" + $env:Path; node _harness.cjs)"
+      "PowerShell($env:Path = \"C:\\\\Users\\\\akt.alm2\\\\Downloads\\\\node-v24.16.0-win-x64;\" + $env:Path; node _harness.cjs)",
+      "Bash(./node_modules/.bin/vitest run *)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }
